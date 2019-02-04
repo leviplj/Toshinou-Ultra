@@ -456,10 +456,10 @@ function logic() {
 	}
 
 	if (!api.attacking && api.lockedShip &&
-		!api.isShipOnBlacklist(api.lockedShip.id) &&
-		(window.settings.settings.killNpcs && api.lockedShip.isNpc && !window.settings.settings.pause) ||
-		(window.settings.settings.autoAttack && api.lockedShip.isEnemy && !api.lockedShip.isNpc) ||
-		(window.settings.settings.autoAttackNpcs && api.lockedShip.isNpc)) {
+			(!api.isShipOnBlacklist(api.lockedShip.id) &&
+			 (window.settings.settings.killNpcs && api.lockedShip.isNpc && !window.settings.settings.pause) ||
+			 (window.settings.settings.autoAttack && api.lockedShip.isEnemy && !api.lockedShip.isNpc) ||
+			 (window.settings.settings.autoAttackNpcs && api.lockedShip.isNpc))) {
 			api.startLaserAttack();
 			api.lastAttack = $.now();
 			api.attacking = true;
