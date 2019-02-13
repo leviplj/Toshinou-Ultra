@@ -456,10 +456,8 @@ function logic() {
 	}
 
 	if (!api.attacking && api.lockedShip &&
-			(!api.isShipOnBlacklist(api.lockedShip.id) &&
-			 (window.settings.settings.killNpcs && api.lockedShip.isNpc && !window.settings.settings.pause) ||
-			 (window.settings.settings.autoAttack && api.lockedShip.isEnemy && !api.lockedShip.isNpc) ||
-			 (window.settings.settings.autoAttackNpcs && api.lockedShip.isNpc))) {
+		!api.isShipOnBlacklist(api.lockedShip.id) &&
+		(window.settings.settings.killNpcs && api.lockedShip.isNpc)) {
 			api.startLaserAttack();
 			api.lastAttack = $.now();
 			api.attacking = true;
@@ -581,24 +579,31 @@ function logic() {
 				}
 			}
 		}
-		if (window.settings.settings.ggbot && api.targetShip.position.x == 20999 && api.targetShip.position.y == 13499) {
-			//GG bottom right corner
+		if (window.settings.settings.ggbot && 
+			api.targetShip.percentOfHp <= 25 &&
+			api.targetShip.position.distanceTo(new Vector2D(20990, 13490)) < 80) {
+			console.log("GG bottom right corner");
 			x = 20495;
 			y = 13363;
-		} else if (window.settings.settings.ggbot && api.targetShip.position.x == 0 && api.targetShip.position.y == 0) {
-			//GG top left corner
+		} else if(window.settings.settings.ggbot && 
+			api.targetShip.percentOfHp <= 25 &&
+			api.targetShip.position.distanceTo(new Vector2D(0, 0)) < 80) {
+			console.log("GG top left corner");
 			x = 450;
 			y = 302;
 		} else if ((dist > 600 && (api.lockedShip == null || api.lockedShip.id != api.targetShip.id) && $.now() - api.lastMovement > 1000)) {
+			console.log("Moving straight");
 			x = api.targetShip.position.x - MathUtils.random(-50, 50);
 			y = api.targetShip.position.y - MathUtils.random(-50, 50);
 			api.lastMovement = $.now();
 		} else if (api.lockedShip && window.settings.settings.dontCircleWhenHpBelow25Percent && api.lockedShip.percentOfHp < 25 && api.lockedShip.id == api.targetShip.id ) {
+			console.log("Don't circle when hp low");
 			if (dist > 450) {
 				x = api.targetShip.position.x + MathUtils.random(-30, 30);
 				y = api.targetShip.position.y + MathUtils.random(-30, 30);
 			}
-		} else if (window.settings.settings.ggbot && window.settings.settings.resetTargetWhenHpBelow25Percent && api.lockedShip && api.lockedShip.percentOfHp < 25 && api.lockedShip.id == api.targetShip.id ) {
+		} else if (window.settings.settings.ggbot && Object.keys(api.ships).length > 1 && window.settings.settings.resetTargetWhenHpBelow25Percent && api.lockedShip && api.lockedShip.percentOfHp < 25 && api.lockedShip.id == api.targetShip.id) {
+			console.log("Resetting target");
 			api.resetTarget("enemy");
 		} else if (dist > 300 && api.lockedShip && api.lockedShip.id == api.targetShip.id & !window.settings.settings.circleNpc) {
 			x = api.targetShip.position.x + MathUtils.random(-200, 200);
@@ -606,11 +611,17 @@ function logic() {
 		} else if (api.lockedShip && api.lockedShip.id == api.targetShip.id) {
 			if (window.settings.settings.circleNpc) {
 				let enemy = api.targetShip.position;
-				let f = Math.atan2(window.hero.position.x - enemy.x, window.hero.position.y - enemy.y) + 0.5;
+				let cx = enemy.x;
+				let cy = enemy.y;
+				if(api.lockedShip.percentOfHp < 25 || dist > 700){
+					cx = api.targetShip.target.x;
+					cy = api.targetShip.target.y;
+				}
+				let f = Math.atan2(window.hero.position.x - cx, window.hero.position.y - cy) + 0.5;
 				let s = Math.PI / 180;
 				f += s;
-				x = enemy.x + window.settings.settings.npcCircleRadius * Math.sin(f);
-				y = enemy.y + window.settings.settings.npcCircleRadius * Math.cos(f);
+				x = cx + window.settings.settings.npcCircleRadius * Math.sin(f);
+				y = cy + window.settings.settings.npcCircleRadius * Math.cos(f);
 				let nearestBox = api.findNearestBox();
 				if (nearestBox && nearestBox.box && nearestBox.distance < 300) {
 					circleBox = nearestBox;
